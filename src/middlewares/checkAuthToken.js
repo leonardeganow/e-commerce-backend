@@ -4,10 +4,9 @@ import jwt from "jsonwebtoken";
 
 // Middleware to check the authorization token
 const checkAuthToken = (req, res, next) => {
-  // Get the token from the Authorization header (e.g., "Bearer <token>")
-  const token = req.headers["authorization"]?.split(" ")[1]; // Split to remove "Bearer"
+  // Get the token from the Authorization header
+  const token = req.headers["authorization"]?.split(" ")[1];
 
-  // If no token is found, respond with 401 Unauthorized
   if (!token) {
     return res.status(401).json({ message: "Authorization token is required" });
   }
@@ -18,10 +17,8 @@ const checkAuthToken = (req, res, next) => {
       return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    // Attach the decoded user data to the request object for use in subsequent middleware/routes
     req.user = decoded;
 
-    // Proceed to the next middleware or route handler
     next();
   });
 };

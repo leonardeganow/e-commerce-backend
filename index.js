@@ -5,7 +5,7 @@ import express from "express";
 import mongoose from "mongoose";
 import expressBasicAuth from "express-basic-auth";
 import { uri } from "./src/constants/index.js";
-import { UserRouter } from "./src/routes/UserRoute.js";
+import { AuthRouter } from "./src/routes/UserRoute.js";
 const app = express();
 const port = 4000;
 
@@ -20,7 +20,7 @@ app.use(
     challenge: true,
   })
 );
-app.use("/user", UserRouter);
+app.use("/auth", AuthRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to leo's e-commerce api");

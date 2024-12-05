@@ -55,3 +55,21 @@ export const registerUserValidation = Joi.object({
         "any.required": `Type is required`,
       }),
   });
+
+
+  export const loginUserValidation = Joi.object({
+    email: Joi.string()
+     .email()
+     .required()
+     .messages({
+        "string.email": `Email must be a valid email address`,
+        "string.empty": `Email cannot be empty`,
+        "any.required": `Email is required`,
+      }),
+    password: Joi.string()
+     .required()
+     .messages({
+        "string.empty": `Password cannot be empty`,
+        "any.required": `Password is required`,
+      }),
+  });
