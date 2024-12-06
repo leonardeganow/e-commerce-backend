@@ -49,6 +49,10 @@ export const loginUserValidation = Joi.object({
     "string.empty": `Password cannot be empty`,
     "any.required": `Password is required`,
   }),
+  role: Joi.string().valid("customer", "admin").required().messages({
+    "any.only": `role must be one of [customer, admin]`,
+    "any.required": `role is required`,
+  }),
 });
 
 export const forgotPasswordValidation = Joi.object({
