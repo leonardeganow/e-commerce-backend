@@ -47,7 +47,7 @@ export const registerUserValidation = Joi.object({
         "string.min": `Password should have at least {#limit} characters`,
         "any.required": `Password is required`,
       }),
-    type: Joi.string()
+    role: Joi.string()
       .valid("customer", "admin",)
       .required()
       .messages({

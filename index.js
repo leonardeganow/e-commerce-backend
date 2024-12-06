@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import cors from "cors";
 import mongoose from "mongoose";
 import expressBasicAuth from "express-basic-auth";
 import { uri } from "./src/constants/index.js";
@@ -10,18 +11,17 @@ const app = express();
 const port = 4000;
 
 app.use(express.json());
-
-//allowing basic auth
 app.use(
-  expressBasicAuth({
-    users: {
-      [process.env.BASIC_AUTH_USERNAME]: process.env.BASIC_AUTH_PASSWORD,
-    },
-    challenge: true,
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow specific methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+    credentials: true, // If you need to send cookies or authentication tokens
   })
 );
-app.use("/auth", AuthRouter);
 
+
+app.use("/auth", AuthRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to leo's e-commerce api");
 });

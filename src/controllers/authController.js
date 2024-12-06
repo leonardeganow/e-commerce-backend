@@ -17,24 +17,29 @@ const registerUser = async (request, response) => {
     }
 
     // Destructure validated data
-    const { name, address, contactNumber, email, password, type } = value;
+    const { name, address, contactNumber, email, password, role } = value;
 
-    await checkIfUserExists(email, response);
+    console.log(value)
 
+    // Check if user exists
+    await checkIfUserExists(email);
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create new user
     const newUser = new UserModel({
       name,
       address,
       contactNumber,
       email,
       password: hashedPassword,
-      type,
+      role
     });
 
     await newUser.save();
 
-    // Respond with user details and token
+    // Respond with user details
     response.status(201).json({
       message: "User registered successfully",
       user: {
@@ -45,6 +50,11 @@ const registerUser = async (request, response) => {
       },
     });
   } catch (error) {
+    // Handle specific "user exists" error
+    if (error.message === "User already exists") {
+      return response.status(400).json({ message: error.message });
+    }
+
     console.error(error);
     response.status(500).json({ message: "Internal server error" });
   }
@@ -52,8 +62,6 @@ const registerUser = async (request, response) => {
 
 const loginUser = async (request, response) => {
   try {
-   
-
     const { error, value } = loginUserValidation.validate(request.body);
 
     if (error) {
@@ -72,16 +80,36 @@ const loginUser = async (request, response) => {
     }
 
     //generate token
-    const token = jwt.sign({user}, process.env.JWT_SECRET, {
+    const token = jwt.sign({ user }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
-    response.json({
+    const refreshToken = jwt.sign(
+      {
+        user,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    console.log(user);
+    
+
+    // Assigning refresh token in http-only cookie
+    response.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    return response.json({
       message: "Logged in successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
+        address: user.address,
+        contactNumber: user.contactNumber,
         type: user.type,
       },
       accessToken: token,
@@ -92,4 +120,30 @@ const loginUser = async (request, response) => {
   }
 };
 
-export { registerUser, loginUser };
+const refreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.jwt;
+    if (!refreshToken) {
+      return res.status(401).json({ message: "unauthorized" });
+    }
+
+    const data = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    if (!data) {
+      return res.status(401).json({ message: "unauthorized" });
+    }
+
+    //generate new token
+    const token = jwt.sign({ user: data.user }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    return res.json({
+      message: "Logged in successfully",
+      accessToken: token,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { registerUser, loginUser, refreshToken };

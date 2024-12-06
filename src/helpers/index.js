@@ -1,13 +1,12 @@
 import UserModel from "../models/UserModel.js";
 
-export async function checkIfUserExists(email, response) {
+export async function checkIfUserExists(email) {
   try {
     const user = await UserModel.findOne({ email });
     if (user) {
-      return response.status(400).json({ message: "User already exists" });
+      throw new Error("User already exists");
     }
   } catch (error) {
-    console.error(error);
-    return response.status(500).json({ message: "Server error" });
+    throw new Error(error.message || "Server error");
   }
 }
