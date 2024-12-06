@@ -2,10 +2,14 @@ import { checkIfUserExists } from "../helpers/index.js";
 import bcrypt from "bcrypt";
 import UserModel from "../models/UserModel.js";
 import {
+  forgotPasswordValidation,
   loginUserValidation,
   registerUserValidation,
+  resetPasswordValidation,
 } from "../validations/userValidation.js";
 import jwt from "jsonwebtoken";
+import { transporter } from "../libs/nodemailer.js";
+import { forgotPasswordTemplate, resetPasswordTemplate } from "../htmlTemplates/index.js";
 
 const registerUser = async (request, response) => {
   try {
@@ -19,7 +23,7 @@ const registerUser = async (request, response) => {
     // Destructure validated data
     const { name, address, contactNumber, email, password, role } = value;
 
-    console.log(value)
+    console.log(value);
 
     // Check if user exists
     await checkIfUserExists(email);
@@ -34,7 +38,7 @@ const registerUser = async (request, response) => {
       contactNumber,
       email,
       password: hashedPassword,
-      role
+      role,
     });
 
     await newUser.save();
@@ -93,7 +97,6 @@ const loginUser = async (request, response) => {
     );
 
     console.log(user);
-    
 
     // Assigning refresh token in http-only cookie
     response.cookie("jwt", refreshToken, {
@@ -146,4 +149,73 @@ const refreshToken = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, refreshToken };
+const forgotPassword = async (req, res) => {
+  try {
+    const { error, value } = forgotPasswordValidation.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    const { email } = value;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    console.log(process.env.RESET_TOKEN_SECRET);
+
+    // Generate a token
+    const resetToken = jwt.sign({ email }, process.env.RESET_TOKEN_SECRET, {
+      expiresIn: "10m",
+    });
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+    // Send email with reset link
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+
+      subject: "Password Reset",
+      html: forgotPasswordTemplate(user.name, resetUrl),
+    });
+
+    res.json({ message: "Password reset link sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { error, value } = resetPasswordValidation.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+    const { email, newPassword } = value;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    // Send confirmation email
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Password Reset Successful",
+        html: resetPasswordTemplate(user.name),
+      });
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+    }
+    res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { registerUser, loginUser, refreshToken, forgotPassword, resetPassword };
