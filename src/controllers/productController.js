@@ -79,9 +79,8 @@ const addCategory = async (req, res) => {
     const newCategory = new CategoryModel({ name });
     await newCategory.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Category added successfully",
-      category: newCategory,
     });
   } catch (error) {
     res
@@ -90,4 +89,71 @@ const addCategory = async (req, res) => {
   }
 };
 
-export { addProduct, addCategory };
+const getCategories = async (req, res) => {
+  try {
+    const categories = await CategoryModel.find();
+    return res.status(200).json({
+      data: categories,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred", error: error.message });
+  }
+};
+
+const updateCategory = async (req, res) => {
+  try {
+    const { id, name } = req.body;
+    if (!id || !name) {
+      return res.status(400).json({ message: "id and name is required" });
+    }
+
+    const categoryToUpdate = await CategoryModel.findById({ _id: id });
+    if (!categoryToUpdate) {
+      return res.status(400).json({ message: "could not find category" });
+    }
+
+    categoryToUpdate.name = name;
+
+    await categoryToUpdate.save();
+
+    return res.status(201).json({
+      message: "category updated successfully",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred", error: error.message });
+  }
+};
+
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({ message: "id  is required" });
+    }
+
+    const categoryToDelete = await CategoryModel.findByIdAndDelete({ _id: id });
+    if (!categoryToDelete) {
+      return res.status(400).json({ message: "could not find category" });
+    }
+
+    return res.status(201).json({
+      message: "category deleted successfully",
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred", error: error.message });
+  }
+};
+
+export {
+  addProduct,
+  addCategory,
+  getCategories,
+  updateCategory,
+  deleteCategory,
+};
