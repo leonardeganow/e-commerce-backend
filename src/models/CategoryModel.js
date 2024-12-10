@@ -4,12 +4,12 @@ const CategorySchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true, // Ensure each category name is unique
-        trim: true,   // Removes leading and trailing whitespaces
+        unique: true, 
+        trim: true,  
     },
     createdAt: {
         type: Date,
-        default: Date.now, // Automatically sets the current date and time
+        default: Date.now, 
     },
 });
 

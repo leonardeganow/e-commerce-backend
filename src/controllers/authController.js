@@ -123,7 +123,6 @@ const loginUser = async (request, response) => {
   try {
     const { error, value } = loginUserValidation.validate(request.body);
 
-
     if (error) {
       return response.status(400).json({ message: error.details[0].message });
     }
@@ -257,7 +256,6 @@ const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
 
     // Generate a token
     const resetToken = jwt.sign({ email }, process.env.RESET_TOKEN_SECRET, {

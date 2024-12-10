@@ -1,5 +1,38 @@
-import uploadToCloudinary from "../libs/cloudinary.js";
+import uploadToCloudinary, {
+  deleteImageFromCloudinary,
+} from "../libs/cloudinary.js";
 import CategoryModel from "../models/CategoryModel.js";
+import ProductModel from "../models/ProductModel.js";
+
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await ProductModel.find({});
+    const categories = await CategoryModel.find({});
+
+    const productsWithCategoryNames = products.map((products) => {
+      const category = categories.find(
+        (category) => category?._id?.toString() === products.category.toString()
+      );
+      return { ...products.toJSON(), categoryName: category?.name };
+    });
+
+    return res.status(200).json({ productsWithCategoryNames });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+const getFeaturedProducts = async (req, res) => {
+  try {
+    const featuredProducts = await ProductModel.find({ featured: true });
+    return res.status(200).json({ featuredProducts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 const addProduct = async (req, res) => {
   try {
@@ -16,18 +49,7 @@ const addProduct = async (req, res) => {
       colors,
     } = req.body;
 
-    if (
-      !name ||
-      !description ||
-      !stock ||
-      !price ||
-      !currency ||
-      !featured ||
-      !categoryId ||
-      !image ||
-      !sizes ||
-      !colors
-    ) {
+    if (!name || !stock || !price || !currency || !categoryId || !image) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -46,7 +68,7 @@ const addProduct = async (req, res) => {
       currency,
       featured,
       category: category._id,
-      image: imageUrl.url,
+      image: imageUrl,
       sizes,
       colors,
     });
@@ -56,6 +78,69 @@ const addProduct = async (req, res) => {
       .json({ message: "Product added successfully", product: newProduct });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const updates = req.body;
+
+    // Check if the product exists
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.image.includes("https://")) {
+      Object.assign(product, updates);
+      await product.save();
+
+      res.status(200).json({
+        message: "Product updated successfully",
+        product,
+      });
+    } else {
+      const imageUrl = await uploadToCloudinary(updates.image);
+      if (!imageUrl || !imageUrl.url) {
+        return res.status(500).json({ message: "Image upload failed" });
+      }
+      updates.image = imageUrl.url;
+      // Update the product
+      Object.assign(product, updates);
+      await product.save();
+
+      res.status(200).json({
+        message: "Product updated successfully",
+        product,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating product:", error.message || error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    // Check if the product exists
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Delete the image from cloudinary
+    await deleteImageFromCloudinary(product.image);
+
+    // Delete the product
+    await ProductModel.findByIdAndDelete(productId);
+
+    res.status(200).json({ message: "Product deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting product:", error.message || error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -91,7 +176,24 @@ const addCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-    const categories = await CategoryModel.find();
+    const categories = await CategoryModel.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "category",
+          as: "products",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          productsCount: { $size: "$products" },
+          productsStock: { $sum: "$products.stock" },
+        },
+      },
+    ]);
     return res.status(200).json({
       data: categories,
     });
@@ -156,4 +258,8 @@ export {
   getCategories,
   updateCategory,
   deleteCategory,
+  deleteProduct,
+  updateProduct,
+  getAllProducts,
+  getFeaturedProducts
 };
