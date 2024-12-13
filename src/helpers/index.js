@@ -1,5 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import AdminModel from "../models/AdminModel.js";
+import bcrypt from "bcrypt";
 
 // Helper function to hash password
 export const hashPassword = async (password) => {

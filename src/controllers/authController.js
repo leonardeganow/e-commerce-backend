@@ -10,6 +10,7 @@ import jwt from "jsonwebtoken";
 import { transporter } from "../libs/nodemailer.js";
 import {
   forgotPasswordTemplate,
+  newUserEmail,
   resetPasswordTemplate,
 } from "../htmlTemplates/index.js";
 import AdminModel from "../models/AdminModel.js";
@@ -18,6 +19,7 @@ import {
   checkIfAdminExists,
   checkIfUserExists,
   createNewAdmin,
+  createNewUser,
   hashPassword,
 } from "../helpers/index.js";
 
@@ -41,7 +43,8 @@ const registerUser = async (request, response) => {
       }
 
       // Check if user exists
-      const existingUser = checkIfUserExists(email);
+      const existingUser = await checkIfUserExists(email);
+
       if (existingUser) {
         return response.status(400).json({ message: "User already exists" });
       }
@@ -50,7 +53,7 @@ const registerUser = async (request, response) => {
       const hashedPassword = await hashPassword(password);
 
       // Prepare user data
-      userData = {
+      const userData = {
         name,
         address,
         contactNumber,
@@ -60,6 +63,13 @@ const registerUser = async (request, response) => {
       };
 
       const newUser = await createNewUser(userData);
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Account created Successfully",
+        html: newUserEmail(name),
+      });
 
       // Respond with user details
       return response.status(201).json({
@@ -109,12 +119,12 @@ const registerUser = async (request, response) => {
       });
     }
   } catch (error) {
+    console.error(error);
     // Handle specific "user exists" error
     if (error.message === "User already exists") {
       return response.status(400).json({ message: error.message });
     }
 
-    console.error(error);
     response.status(500).json({ message: "Internal server error" });
   }
 };

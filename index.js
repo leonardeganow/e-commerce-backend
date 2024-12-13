@@ -9,16 +9,15 @@ import { uri } from "./src/constants/index.js";
 import { AuthRouter } from "./src/routes/UserRoute.js";
 import { ProductRouter } from "./src/routes/ProductRoute.js";
 import bodyParser from "body-parser";
+import { CartRouter } from "./src/routes/CartRoute.js";
 const app = express();
 const port = 4000;
 
-
 // Set limit for JSON payload
-app.use(express.json({ limit: '10mb' })); // Set the limit to 10MB
+app.use(express.json({ limit: "10mb" })); // Set the limit to 10MB
 
 // Set limit for URL-encoded form data (if you need to handle form submissions)
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
-
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 app.use(
   cors({
@@ -31,6 +30,7 @@ app.use(
 
 app.use("/auth", AuthRouter);
 app.use("/product", ProductRouter);
+app.use("/cart", CartRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to leo's e-commerce api");

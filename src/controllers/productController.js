@@ -23,7 +23,6 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-
 const getFeaturedProducts = async (req, res) => {
   try {
     const featuredProducts = await ProductModel.find({ featured: true });
@@ -32,7 +31,35 @@ const getFeaturedProducts = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
+const firstTenProducts = async (req, res) => {
+  try {
+    const firstTenProducts = await ProductModel.find({ featured: false }).limit(
+      10
+    );
+    return res.status(200).json({ firstTenProducts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getProductById = async (req, res) => {
+  try {
+    const { productid } = req.params;
+
+    const product = await ProductModel.findById(productid);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json({ product });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 const addProduct = async (req, res) => {
   try {
@@ -252,6 +279,29 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const getProductsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    if (!categoryId) {
+      return res.status(400).json({ message: "Category ID is required" });
+    }
+    const category = await CategoryModel.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    const products = await ProductModel.find({ category: categoryId });
+    if (!products) {
+      return res.status(404).json({ message: "Products not found" });
+    }
+
+
+    return res.status(200).json({ products });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export {
   addProduct,
   addCategory,
@@ -261,5 +311,8 @@ export {
   deleteProduct,
   updateProduct,
   getAllProducts,
-  getFeaturedProducts
+  getFeaturedProducts,
+  firstTenProducts,
+  getProductById,
+  getProductsByCategory,
 };

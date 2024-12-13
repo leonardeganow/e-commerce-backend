@@ -1,3 +1,5 @@
+import { CLIENT_URL, SHOP_NAME } from "../constants/index.js";
+
 export const forgotPasswordTemplate = (name, url) => {
   return `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f4f4; margin: 0; padding: 0;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -72,4 +74,37 @@ export const resetPasswordTemplate = (name) => {
       </tr>
   </table>
               `;
+};
+
+export const newUserEmail = (name) => {
+  return `
+   <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ${SHOP_NAME} store</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <header style="background-color: #4a4a4a; color: #ffffff; padding: 20px; text-align: center;">
+        <h1 style="margin: 0;">Welcome to Our Platform!</h1>
+    </header>
+    <main style="padding: 20px;">
+        <p>Hello ${name},</p>
+        <p>We're thrilled to have you on board! Your account has been successfully created, and we can't wait for you to start exploring all the amazing products our shop has to offer.</p>
+        <h2 style="color: #4a4a4a;">How to Navigate the shop:</h2>
+        <ol>
+            <li>Look for a product</li>
+            <li>Add to cart</li>
+            <li>Checkout and make payment with mobile money or your card</li>
+            <li>After order is successful we will contact you for delivery</li>
+        </ol>
+        <p>If you have any questions or need assistance, don't hesitate to reach out to our support team.</p>
+        <a href=${CLIENT_URL} style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Get Started</a>
+    </main>
+    <footer style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 0.8em;">
+        <p>&copy; 2025 ${SHOP_NAME}. All rights reserved.</p>
+        <p>You're receiving this email because you recently created an account on our platform.</p>
+    </footer>
+</body>
+</html>`;
 };

@@ -4,9 +4,12 @@ import {
   addProduct,
   deleteCategory,
   deleteProduct,
+  firstTenProducts,
   getAllProducts,
   getCategories,
   getFeaturedProducts,
+  getProductById,
+  getProductsByCategory,
   updateCategory,
   updateProduct,
 } from "../controllers/productController.js";
@@ -25,4 +28,7 @@ router.put("/products/:productId", updateProduct);
 router.delete("/products/:productId", deleteProduct);
 router.get("/products/allproducts", getAllProducts);
 router.get("/products/featuredproducts", getFeaturedProducts);
+router.get("/products/tenproducts", firstTenProducts);
+router.get("/products/:productid", getProductById);
+router.get("/productsbycategory/:categoryId", getProductsByCategory);
 export { router as ProductRouter };
