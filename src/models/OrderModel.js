@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const OrderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   items: [
@@ -11,14 +13,19 @@ const OrderSchema = new mongoose.Schema({
       size: { type: String, required: true },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },
-      currency: { type: String, required: true }, // e.g., "USD", "EUR", "GHS"
+      currency: { type: String, required: true },
     },
   ],
   totalAmount: { type: Number, required: true },
-  currency: { type: String, required: true, default: "USD" }, // Default currency
+  shippingAddress: { type: String, required: true },
+  city: { type: String, required: true },
+  country: { type: String, required: true },
+  contactNumber: { type: String, required: true },
+  paymentReference: { type: String, required: true },
+  currency: { type: String, required: true, default: "GHS" },
   paymentStatus: {
     type: String,
-    enum: ["pending", "completed", "failed"],
+    enum: ["pending", "success", "failed"],
     default: "pending",
   },
   orderStatus: {

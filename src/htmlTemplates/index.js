@@ -1,4 +1,5 @@
 import { CLIENT_URL, SHOP_NAME } from "../constants/index.js";
+import { moneyFormatter } from "../utils/index.js";
 
 export const forgotPasswordTemplate = (name, url) => {
   return `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f4f4; margin: 0; padding: 0;">
@@ -86,7 +87,7 @@ export const newUserEmail = (name) => {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
     <header style="background-color: #4a4a4a; color: #ffffff; padding: 20px; text-align: center;">
-        <h1 style="margin: 0;">Welcome to Our Platform!</h1>
+        <h1 style="margin: 0;">Welcome to ${SHOP_NAME}</h1>
     </header>
     <main style="padding: 20px;">
         <p>Hello ${name},</p>
@@ -99,12 +100,94 @@ export const newUserEmail = (name) => {
             <li>After order is successful we will contact you for delivery</li>
         </ol>
         <p>If you have any questions or need assistance, don't hesitate to reach out to our support team.</p>
-        <a href=${CLIENT_URL} style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Get Started</a>
+        <a href="${CLIENT_URL}/login"style="display: inline-block; background-color: #4CAF50; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 20px;">Get Started</a>
     </main>
     <footer style="background-color: #f4f4f4; padding: 20px; text-align: center; font-size: 0.8em;">
         <p>&copy; 2025 ${SHOP_NAME}. All rights reserved.</p>
         <p>You're receiving this email because you recently created an account on our platform.</p>
     </footer>
+</body>
+</html>`;
+};
+
+export const successfulOrderCreated = (name, order) => {
+  return `
+    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Thank You for Your Order!</h1>
+    </div>
+    <div class="content">
+        <p>Dear ${name},</p>
+        <p>We're excited to confirm that your order has been successfully placed. Here are the details of your purchase:</p>
+        <ul>
+            <li>Order Number: ${order?._id}</li>
+            <li>Order Date: ${new Date(
+              order?.createdAt
+            ).toLocaleDateString()}</li>
+            <li>Total Amount:  ${moneyFormatter.format(order?.totalAmount)}</li>
+        </ul>
+
+        <p>Here's a summary of the items you've ordered:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background-color: #f4f4f4;">
+                <th style="padding: 10px; text-align: left;">Product</th>
+                <th style="padding: 10px; text-align: right;">Quantity</th>
+                <th style="padding: 10px; text-align: right;">Price</th>
+            </tr>
+     
+            ${order?.items?.map((item) => {
+              return `<tr>
+                    <td style="padding: 10px;">${item.product.name}</td>
+                    <td style="padding: 10px; text-align: right;">${item.quantity}</td>
+                    <td style="padding: 10px; text-align: right;">${item.price}</td>
+                </tr>`;
+            })}
+       
+        </table>
+        <p>Thank you for shopping with us!</p>
+        <p>Best regards,<br>The ${SHOP_NAME} Team</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2023 ${SHOP_NAME}. All rights reserved.</p>
+    </div>
 </body>
 </html>`;
 };

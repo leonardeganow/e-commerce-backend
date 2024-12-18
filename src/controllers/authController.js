@@ -5,6 +5,7 @@ import {
   loginUserValidation,
   registerUserValidation,
   resetPasswordValidation,
+  updateProfileValidation,
 } from "../validations/userValidation.js";
 import jwt from "jsonwebtoken";
 import { transporter } from "../libs/nodemailer.js";
@@ -141,7 +142,9 @@ const loginUser = async (request, response) => {
     if (role === "customer") {
       const user = await UserModel.findOne({ email });
       if (!user) {
-        return response.status(401).json({ message: "Invalid credentials" });
+        return response
+          .status(401)
+          .json({ message: "You dont have an account with us!" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -321,4 +324,33 @@ const resetPassword = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, refreshToken, forgotPassword, resetPassword };
+const updateUserInfo = async (req, res) => {
+  try {
+    // const { error, value } = updateProfileValidation.validate(req.body);
+    // if (error) {
+    //   return res.status(400).json({ message: error.details[0].message });
+    // }
+    const { userId, name, address, contactNumber } = req.body;
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { name, address, contactNumber },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  refreshToken,
+  forgotPassword,
+  resetPassword,
+  updateUserInfo,
+};

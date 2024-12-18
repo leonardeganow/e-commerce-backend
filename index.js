@@ -10,6 +10,8 @@ import { AuthRouter } from "./src/routes/UserRoute.js";
 import { ProductRouter } from "./src/routes/ProductRoute.js";
 import bodyParser from "body-parser";
 import { CartRouter } from "./src/routes/CartRoute.js";
+import { OrderRouter } from "./src/routes/OrderRoute.js";
+import { DashboardRouter } from "./src/routes/DashboardRoute.js";
 const app = express();
 const port = 4000;
 
@@ -31,6 +33,8 @@ app.use(
 app.use("/auth", AuthRouter);
 app.use("/product", ProductRouter);
 app.use("/cart", CartRouter);
+app.use("/order", OrderRouter);
+app.use("/dashboard", DashboardRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to leo's e-commerce api");

@@ -282,8 +282,10 @@ const deleteCategory = async (req, res) => {
 const getProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    if (!categoryId) {
-      return res.status(400).json({ message: "Category ID is required" });
+
+    if (categoryId === "all") {
+      const products = await ProductModel.find();
+      return res.status(200).json({ products });
     }
     const category = await CategoryModel.findById(categoryId);
     if (!category) {
@@ -294,7 +296,6 @@ const getProductsByCategory = async (req, res) => {
       return res.status(404).json({ message: "Products not found" });
     }
 
-
     return res.status(200).json({ products });
   } catch (error) {
     console.error(error);
@@ -302,6 +303,58 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
+const getLatestProducts = async (req, res) => {
+  try {
+    const newArrivals = await ProductModel.find()
+      .sort({ createdAt: -1 })
+      .limit(4);
+    return res.status(200).json({ newArrivals });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getRelatedProducts = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await ProductModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    let relatedProducts = await ProductModel.find({
+      $or: [
+        { category: product.category },
+        { colors: { $in: product.colors } }, // Match colors
+        { sizes: { $in: product.sizes } }, // Match sizes
+      ],
+      _id: { $ne: productId },
+    }).limit(4);
+
+    // If fewer than 5, add random products to fill the gap
+    if (relatedProducts.length < 5) {
+      const additionalProducts = await ProductModel.aggregate([
+        {
+          $match: {
+            _id: { $nin: [productId, ...relatedProducts.map((p) => p._id)] },
+          },
+        },
+        { $sample: { size: 4 - relatedProducts.length } },
+      ]);
+
+      relatedProducts = [...relatedProducts, ...additionalProducts];
+    }
+    return res.status(200).json({
+      relatedProducts,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 export {
   addProduct,
   addCategory,
@@ -315,4 +368,6 @@ export {
   firstTenProducts,
   getProductById,
   getProductsByCategory,
+  getRelatedProducts,
+  getLatestProducts,
 };

@@ -13,8 +13,18 @@ const ProductSchema = new mongoose.Schema({
     required: true,
   },
   image: { type: String, required: true },
-  colors: [String],
-  sizes: [String],
+  colors: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
+  sizes: [
+    {
+      type: String,
+      required: true,
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 

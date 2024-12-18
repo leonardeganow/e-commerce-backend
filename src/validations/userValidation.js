@@ -74,3 +74,22 @@ export const resetPasswordValidation = Joi.object({
     "any.required": `Password is required`,
   }),
 });
+
+export const updateProfileValidation = Joi.object({
+  name: Joi.string().min(3).max(50).required().messages({
+    "string.base": `Name should be a type of text`,
+    "string.empty": `Name cannot be empty`,
+    "string.min": `Name should have at least {#limit} characters`,
+    "string.max": `Name should have at most {#limit} characters`,
+    "any.required": `Name is required`,
+  }),
+  email: Joi.string().email(),
+  address: Joi.string().min(10).max(255).required().messages({
+    "string.base": `Address should be a type of text`,
+    "string.empty": `Address cannot be empty`,
+    "string.min": `Address should have at least {#limit} characters`,
+    "string.max": `Address should have at most {#limit} characters`,
+    "any.required": `Address is required`,
+  }),
+  contactNumber: Joi.string(),
+});

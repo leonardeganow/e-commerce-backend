@@ -1,7 +1,7 @@
 export const getIdFromCloudinaryUrl = (url) => {
   try {
     // Find the "/upload/" part and get the substring after it
-    const uploadIndex = url.indexOf("/upload/") + 8; 
+    const uploadIndex = url.indexOf("/upload/") + 8;
     const path = url.slice(uploadIndex);
 
     // Remove the version string if present (e.g., 'v1733655921/')
@@ -18,3 +18,9 @@ export const getIdFromCloudinaryUrl = (url) => {
     throw new Error("Failed to extract public ID from Cloudinary URL");
   }
 };
+
+export const moneyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "GHS",
+  minimumFractionDigits: 2,
+});

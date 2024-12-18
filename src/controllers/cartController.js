@@ -16,6 +16,13 @@ const addToCart = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    //check if quantity is greater than stock
+    if (product.stock < quantity) {
+      return res.status(400).json({
+        message: "The quantity you selected is more than what we have in stock",
+      });
+    }
+
     // Check stock availability
     const cart =
       (await CartModel.findOne({ user: userId })) ||
@@ -50,10 +57,6 @@ const addToCart = async (req, res) => {
     }
 
     await cart.save();
-
-    // Deduct stock
-    product.stock -= quantity;
-    await product.save();
 
     res.status(200).json(cart);
   } catch (error) {
@@ -134,6 +137,18 @@ const updateCartQuantity = async (req, res) => {
     const existingItem = cart.items.find(
       (item) => item.product.toString() === productId.toString()
     );
+
+    const product = await ProductModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    //check if quantity is greater than stock
+    if (product.stock == existingItem.quantity) {
+      return res.status(400).json({
+        message: "The quantity you selected is more than what we have in stock",
+      });
+    }
 
     // If the item doesn't exist, return an error
     if (!existingItem) {

@@ -8,8 +8,10 @@ import {
   getAllProducts,
   getCategories,
   getFeaturedProducts,
+  getLatestProducts,
   getProductById,
   getProductsByCategory,
+  getRelatedProducts,
   updateCategory,
   updateProduct,
 } from "../controllers/productController.js";
@@ -22,6 +24,7 @@ const router = express.Router();
 router.post("/addproduct", addProduct);
 router.post("/addcategory", addCategory);
 router.get("/getcategories", getCategories);
+router.get("/products/newarrivals", getLatestProducts);
 router.put("/updatecategory", updateCategory);
 router.delete("/deletecategory", deleteCategory);
 router.put("/products/:productId", updateProduct);
@@ -30,5 +33,6 @@ router.get("/products/allproducts", getAllProducts);
 router.get("/products/featuredproducts", getFeaturedProducts);
 router.get("/products/tenproducts", firstTenProducts);
 router.get("/products/:productid", getProductById);
+router.get("/relatedproducts/:productId", getRelatedProducts);
 router.get("/productsbycategory/:categoryId", getProductsByCategory);
 export { router as ProductRouter };
