@@ -231,6 +231,11 @@ const loginUser = async (request, response) => {
   }
 };
 
+const logOut = async (req, res) => {
+  res.clearCookie("jwt");
+  return res.json({ message: "Logged out successfully" });
+};
+
 const refreshToken = async (req, res) => {
   try {
     const refreshToken = req.cookies.jwt;
@@ -346,6 +351,58 @@ const updateUserInfo = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    //take old password to change to new password
+
+    const { oldPassword, newPassword, userId, role } = req.body;
+
+    
+
+    if (!oldPassword) {
+      return res.status(400).json({ message: "Old password is required" });
+    }
+
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    if (role === "customer") {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "your old password is wrong" });
+      }
+      const hashedPassword = await hashPassword(newPassword);
+      user.password = hashedPassword;
+
+      await user.save();
+      res.status(200).json({ message: "Password changed successfully" });
+    }
+
+    if (role === "admin") {
+      const admin = await AdminModel.findById(userId);
+      if (!admin) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const isMatch = await bcrypt.compare(oldPassword, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      const hashedPassword = await hashPassword(newPassword);
+      admin.password = hashedPassword;
+      await admin.save();
+      res.status(200).json({ message: "Password changed successfully" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -353,4 +410,5 @@ export {
   forgotPassword,
   resetPassword,
   updateUserInfo,
+  changePassword,
 };

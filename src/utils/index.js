@@ -1,3 +1,5 @@
+
+import { format } from "date-fns";
 export const getIdFromCloudinaryUrl = (url) => {
   try {
     // Find the "/upload/" part and get the substring after it
@@ -24,3 +26,16 @@ export const moneyFormatter = new Intl.NumberFormat("en-US", {
   currency: "GHS",
   minimumFractionDigits: 2,
 });
+
+
+export const formatDate_util = (date, pattern) => {
+  try {
+    if (!date) {
+      return;
+    }
+
+    return format(new Date(date), pattern);
+  } catch (error) {
+    console.error(error);
+  }
+};

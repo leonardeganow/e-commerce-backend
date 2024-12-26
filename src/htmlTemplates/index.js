@@ -1,5 +1,5 @@
 import { CLIENT_URL, SHOP_NAME } from "../constants/index.js";
-import { moneyFormatter } from "../utils/index.js";
+import { formatDate_util, moneyFormatter } from "../utils/index.js";
 
 export const forgotPasswordTemplate = (name, url) => {
   return `<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f4f4; margin: 0; padding: 0;">
@@ -188,6 +188,56 @@ export const successfulOrderCreated = (name, order) => {
     <div class="footer">
         <p>&copy; 2023 ${SHOP_NAME}. All rights reserved.</p>
     </div>
+</body>
+</html>`;
+};
+
+export const orderStatusEmail = (name, order) => {
+  return `<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Status Update</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8f8f8; padding: 20px;">
+        <tr>
+            <td>
+                <h1 style="color: #4a4a4a; text-align: center;">Order Status Update</h1>
+                <p style="font-size: 16px;">Dear ${name},</p>
+                <p style="font-size: 16px;">We're writing to inform you that the status of your order #${
+                  order._id
+                } has been ${order.orderStatus}.</p>
+                <table width="100%" cellpadding="10" cellspacing="0" style="background-color: #ffffff; border-radius: 5px; margin-bottom: 20px;">
+                    <tr>
+                        <td style="border-bottom: 1px solid #eeeeee;">
+                            <strong>New Status:</strong> ${order.orderStatus}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border-bottom: 1px solid #eeeeee;">
+                            <strong>Order Number:</strong>  ${order._id}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Date of Update:</strong> ${formatDate_util(
+                              order.updatedAt,
+                              "yyyy-MM-dd HH:mm:ss"
+                            )}
+                        </td>
+                    </tr>
+                </table>
+                <p style="font-size: 16px;">You can check the full details of your order by clicking the button below:</p>
+                <p style="text-align: center;">
+                    <a href="${CLIENT_URL}/home/orders" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Order Details</a>
+                </p>
+                <p style="font-size: 16px;">If you have any questions or concerns about your order, please don't hesitate to contact our customer support team.</p>
+                <p style="font-size: 16px;">Thank you for shopping with us!</p>
+                <p style="font-size: 16px;">Best regards,<br>${SHOP_NAME} Team</p>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>`;
 };

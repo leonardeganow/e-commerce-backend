@@ -5,29 +5,38 @@ const addToCart = async (req, res) => {
   try {
     const { userId, productid, quantity, color, size } = req.body;
 
+    // Validate quantity
     if (quantity <= 0) {
       return res
         .status(400)
         .json({ message: "Quantity must be greater than zero" });
     }
 
+    // Find the product
     const product = await ProductModel.findById(productid);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    //check if quantity is greater than stock
+    if (product.stock === 0) {
+      return res.status(400).json({
+        message: "This product is out of stock",
+      });
+    }
+
+    // Check if the requested quantity exceeds stock
     if (product.stock < quantity) {
       return res.status(400).json({
         message: "The quantity you selected is more than what we have in stock",
       });
     }
 
-    // Check stock availability
+    // Find or initialize the user's cart
     const cart =
       (await CartModel.findOne({ user: userId })) ||
       new CartModel({ user: userId, items: [] });
 
+    // Find the existing item in the cart
     const existingItemIndex = cart.items.findIndex(
       (item) =>
         item.product.toString() === productid &&
@@ -39,10 +48,16 @@ const addToCart = async (req, res) => {
       existingItemIndex >= 0 ? cart.items[existingItemIndex].quantity : 0;
     const totalQuantity = currentQuantityInCart + quantity;
 
-    // if (totalQuantity > product.stock) {
-    //   return res.status(400).json({ message: `this item is out of stock` });
-    // }
+    // Ensure the total quantity doesn't exceed stock
+    if (totalQuantity > product.stock) {
+      return res.status(400).json({
+        message: `This item exceeds the available stock. Only ${
+          product.stock - currentQuantityInCart
+        } more can be added.`,
+      });
+    }
 
+    // Update the cart
     if (existingItemIndex > -1) {
       cart.items[existingItemIndex].quantity = totalQuantity;
     } else {
@@ -56,11 +71,12 @@ const addToCart = async (req, res) => {
       });
     }
 
+    // Save the cart
     await cart.save();
 
     res.status(200).json(cart);
   } catch (error) {
-    console.error("Error adding to cart:", error);
+    console.error("Error adding to cart:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };
