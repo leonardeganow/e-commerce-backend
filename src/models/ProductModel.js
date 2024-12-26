@@ -12,17 +12,17 @@ const ProductSchema = new mongoose.Schema({
     ref: "Category",
     required: true,
   },
-  image: { type: String },
+  image: { type: String, required: true },
   colors: [
     {
-      name: { type: String, required: true },
-      hexCode: { type: String, required: true },
+      type: String,
+      required: true,
     },
   ],
   sizes: [
     {
-      name: { type: String, required: true },
-      stock: { type: Number, required: true },
+      type: String,
+      required: true,
     },
   ],
   createdAt: { type: Date, default: Date.now },

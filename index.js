@@ -2,25 +2,39 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import cors from "cors";
 import mongoose from "mongoose";
 import expressBasicAuth from "express-basic-auth";
 import { uri } from "./src/constants/index.js";
 import { AuthRouter } from "./src/routes/UserRoute.js";
+import { ProductRouter } from "./src/routes/ProductRoute.js";
+import bodyParser from "body-parser";
+import { CartRouter } from "./src/routes/CartRoute.js";
+import { OrderRouter } from "./src/routes/OrderRoute.js";
+import { DashboardRouter } from "./src/routes/DashboardRoute.js";
 const app = express();
 const port = 4000;
 
-app.use(express.json());
+// Set limit for JSON payload
+app.use(express.json({ limit: "10mb" })); // Set the limit to 10MB
 
-//allowing basic auth
+// Set limit for URL-encoded form data (if you need to handle form submissions)
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
 app.use(
-  expressBasicAuth({
-    users: {
-      [process.env.BASIC_AUTH_USERNAME]: process.env.BASIC_AUTH_PASSWORD,
-    },
-    challenge: true,
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
 app.use("/auth", AuthRouter);
+app.use("/product", ProductRouter);
+app.use("/cart", CartRouter);
+app.use("/order", OrderRouter);
+app.use("/dashboard", DashboardRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to leo's e-commerce api");
