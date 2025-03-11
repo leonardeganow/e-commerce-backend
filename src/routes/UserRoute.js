@@ -5,7 +5,7 @@ import {
   loginUser,
   refreshToken,
   registerUser,
-  resetPassword,
+  resetPassword,  
   updateUserInfo,
 } from "../controllers/authController.js";
 import multer from "multer";
